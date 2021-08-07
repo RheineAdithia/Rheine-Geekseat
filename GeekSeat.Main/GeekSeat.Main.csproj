@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GeekSeat.Entity\GeekSeat.Entity.csproj" />
+    <ProjectReference Include="..\GeekSeat.Service\GeekSeat.Service.csproj" />
+  </ItemGroup>
+
+</Project>

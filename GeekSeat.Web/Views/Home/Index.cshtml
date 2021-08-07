@@ -1,0 +1,121 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div id="app">
+    <div v-if="!!!averageDeaths">
+        <section class="hero-wrapper text-center">
+            <h1 class="display-4">Hello Traveller!</h1>
+            <p>Add some villagers to the table, and click "Calculate" to see how much of the average villager are killed by the witch</p>
+        </section>
+        <div class="container my-3">
+            <div class="row">
+                <div class="col-12 col-md-6 border-secondary border p-3" v-for="(item, index) in villagers">
+                    <h4>Villager #{{ index + 1 }}</h4>
+                    <div class="row">
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Age of Death</label>
+                                <input type="number" class="form-control" placeholder="Age of Death" v-model.number="item.ageOfDeath" v-on:keypress="IsNumber($event)">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Year of Death</label>
+                                <input type="number" class="form-control" placeholder="Year of Death" v-model.number="item.yearOfDeath" v-on:keypress="IsNumber($event)">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center" id="app">
+                        <button class="btn btn-outline-danger" v-on:click="RemoveVillager(item)">Remove</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center">
+            <button class="btn btn-secondary" v-on:click="AddVillager">Add Villager</button>
+            <button class="btn btn-primary" v-on:click="Calculate">Calculate</button>
+        </div>
+    </div>
+    <div v-else>
+        <section class="hero-wrapper text-center" v-if="averageDeaths > 0">
+            <h1 class="display-4">Sad News!</h1>
+            <h4>The average death in this village is <span style="color:red;">{{ averageDeaths }}</span> person</h4>
+            <button class="btn btn-primary mt-3" v-on:click="Reset">Reset</button>
+        </section>
+        <section class="hero-wrapper text-center" v-else>
+            <h1 class="display-4">Good News!</h1>
+            <h4>The average death in this village is <span style="color:green;">{{ averageDeaths }}</span> person</h4>
+            <button class="btn btn-primary mt-3" v-on:click="Reset">Reset</button>
+        </section>
+    </div>
+</div>
+
+
+@section Scripts{
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                villagers: [],
+                averageDeaths: null,
+            },
+            methods: {
+                AddVillager() {
+                    this.villagers.push({
+                        ageOfDeath: 0,
+                        yearOfDeath: 0
+                    })
+                },
+                RemoveVillager(item) {
+                    this.villagers.splice(item, 1);
+                },
+                IsNumber: function (evt) {
+                    const theEvent = evt || window.event;
+                    let key = theEvent.keyCode || theEvent.which;
+                    key = String.fromCharCode(key);
+                    if (key.length == 0) return;
+                    const regex = /^[0-9\b]+$/;
+                    if (!regex.test(key)) {
+                        theEvent.returnValue = false;
+                        if (theEvent.preventDefault) theEvent.preventDefault();
+                    }
+                },
+                Calculate() {
+                    const _vue = this;
+                    if (this.villagers.length <= 0) {
+                        alert("Please add some villager first");
+                        return;
+                    }
+
+                    const request = {
+                        villagers: this.villagers
+                    };
+
+                    $.ajax({
+                        url: "/Home/CalculateAverageDeaths",
+                        type: "POST",
+                        contentType: "application/json",
+                        dataType: "json",
+                        data: JSON.stringify(request),
+                        success: function (response) {
+                            if (response.isSuccess) {
+                                _vue.averageDeaths = response.message;
+                            } else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            console.log(textStatus, errorThrown);
+                        }
+                    });
+                },
+                Reset() {
+                    this.villagers = [];
+                    this.averageDeaths = null;
+                }
+            }
+        })
+    </script>
+}
+
